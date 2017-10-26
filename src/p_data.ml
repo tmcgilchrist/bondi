@@ -31,6 +31,7 @@ type p_term =
   | Poper of string * p_term list (* name and arguments *)
   | Papply of p_term * p_term 
   | Plam of p_term * p_term 
+  | Poperator of string
 (*
   | Plin of p_term * p_term 
 *)
@@ -248,7 +249,7 @@ let rpn() = ps ")" ;;
 let incrStringCounter ctr minc maxc = (* for incrementing term and type variables *)
   let ndx = ref (String.length ctr - 1)
   and flag = ref false
-  and newCtr = String.copy ctr
+  and newCtr = Bytes.of_string ctr
   in 
   while (!ndx >= 0 && !flag = false) do (* CHANGED & to && !!!! *)
     flag := true;
@@ -256,10 +257,10 @@ let incrStringCounter ctr minc maxc = (* for incrementing term and type variable
     in
     if c <= maxc
     then 
-      newCtr.[!ndx] <- c
+      Bytes.set newCtr !ndx c
     else (* carry *) 
       (flag := false;
-       newCtr.[!ndx] <- minc;
+       Bytes.set newCtr !ndx minc;
        ndx := !ndx - 1)
   done;
   if (!flag = false) (* need to extend string *)
@@ -368,6 +369,8 @@ let rec format_p_term = function
        format_p_term p;
        ps " -> ";
        format_p_term s
+
+   | Poperator s -> ps s (* the string names the operator *) 
 	 
 (*
    | Plin (p,s) ->

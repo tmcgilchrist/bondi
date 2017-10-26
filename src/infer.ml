@@ -411,7 +411,7 @@ let rec invoke_ty sEnv sub uty mty  =
 let infer_constructor_with_delta x sEnv fixed sub0 expectedTy =
   let (n,(sch,status)) = 
     try envFind 0 (Var x) globalCEnv
-    with Not_found -> termError [Tconstructor (Var x,0)] "is not recognised"
+    with Not_found -> termError [Tconstructor (Var x,0)] "is not a recognised constructor"
   in 
   let (ty1,delta1) = inst_tyscheme_with_bvars sch  in 
   let sub2 = subunify fixed sub0 ty1 expectedTy
@@ -691,6 +691,7 @@ function
   | Poper(d,args) -> infer_oper d args 
   | Papply (f, x) -> infer_ap f x 
   | Plam(p,s) -> infer_lam p s
+  | Poperator s -> infer_operator s
 (*
   | Plin (p,s) -> infer_lin p s
 *)
@@ -712,6 +713,22 @@ function
   | Pcname _ -> (fun _ _ _ _ -> typeError [] "Unexpected CPC name/constructor, aborting.")
 (*< CPC *)
 
+and infer_operator_scheme (s:string) = 
+let tv1 = nextTypeVar() in 
+let tv2 = nextTypeVar() in 
+let tv3 = nextTypeVar() in 
+Quant(tv1, Quant (tv2, Quant (tv3, 
+   funty (funty (TyV (tv1,0)) (funty (TyV(tv2,0)) (TyV(tv3,0)))) 
+  (funty (funty(TyV(tv1,0)) (TyV(tv2,0))) (funty (TyV(tv1,0)) (TyV(tv3,0)))))))
+
+
+and infer_operator str sEnv fixed sub0 expectedTy = 
+  let sch = infer_operator_scheme str in 
+  let ty1 = inst_tyscheme sch in 
+  let sub2 = subunify fixed sub0 ty1 expectedTy
+  in 
+  (sub2,Operator str)
+
 and infer_var x sEnv fixed sub0 expectedTy = 
   let (sch,symbol) = 
     try (fst (TMap.find x sEnv),Tvar(x,0))
@@ -723,13 +740,13 @@ and infer_var x sEnv fixed sub0 expectedTy =
 	    if hasRefVar 
 	    then (applySub !globalRefVarSub sch1,Tvar(x,n))
 	    else (sch1,Tvar(x,n))
-      with Not_found -> termError [Tvar (x,0)] "is not recognised"
+      with Not_found -> termError [Tvar (x,0)] "is not a recognised variable"
   in 
-  let ty1 = inst_tyscheme (applySub sub0 sch) in 
+   let ty1 = inst_tyscheme (applySub sub0 sch) in 
   let sub2 = subunify fixed sub0 ty1 expectedTy
   in 
   (sub2,symbol)
-  
+ 
 and infer_wild str sEnv fixed sub0 expectedTy = 
  let wild = Twildcard str in 
 

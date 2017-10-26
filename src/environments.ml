@@ -55,6 +55,7 @@ type i_term =
   | Oper of string * i_term list          (* operators with arguments *)
   | Apply of i_term * i_term              (* applications *) 
   | Lam of term_variable * i_term         (* abstractions *) 
+  | Operator of string                    (* S, K, I, A, E, Tag etc? *) 
   | Case of term_variable list option * i_term * i_term               (* static cases *) 
   | Choice of i_term * i_term              (* choices, for extensions *) 
   | Over of i_term * i_term              (* overcase, for extensions *) 
@@ -152,7 +153,7 @@ let rec isValue = function (* for the value restriction upon polymorphism *)
   | Tnextvar                      
   | Tsuper _
   | Twildcard _ 
-  | Twildstring   _   
+  | Twildstring    
   | Tconstructor _ 
   | Datum _
   | Lam _ 
@@ -867,6 +868,7 @@ let rec do_format t' left_prec right_prec =
       ps " -> " ;
       do_format s 0 0;
      rpn()	
+  | Operator s -> ps s
 (*> CPC *)
   | Tdname (ty,d,_) -> (if ty = P_data.Protected then ps "~" else ());do_format d 0 0
   | Tcname (nt,id,_,_)
