@@ -70,18 +70,12 @@ let keyword_table =          (* 97 is a prime larger than table size *)
   "rest",                REST;              (* Used to denote restrictions *)
 (*< CPC *)
   "sleep",               SLEEP;
-  "sop",                   SOP;
   "spawn",               SPAWN;
   "static",              STATIC;
   "super",               SUPER;
   "then",      		 THEN;
   "to",        		 TO;
   "True",                TRUE;
-  "K",                   kOP;
-  "I",                   iOP;
-  "A",                   OP;
-  "Tag",                 TAG;
-  "E",                   EOP;
   "type",      		 TYPE;
   "Un",                  UN;
   "view",                VIEW;
@@ -89,7 +83,7 @@ let keyword_table =          (* 97 is a prime larger than table size *)
   "isRef",		 ISREF;
   "isArray",		 ISARRAY;
   "while",               WHILE;
-  "with",      		 WITH;
+  "with",      		 WITH
  ] 
 ;;
 

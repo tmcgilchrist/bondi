@@ -21,7 +21,6 @@ type p_term =
 	(* datum operators, conditionals, new, assignment, output *) 
   | Papply of p_term * p_term
   | Plam of p_term * p_term 
-  | Poperator of string
 (*
   | Plin of p_term * p_term 
 *)
