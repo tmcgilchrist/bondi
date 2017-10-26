@@ -717,9 +717,24 @@ and infer_operator_scheme (s:string) =
 let tv1 = nextTypeVar() in 
 let tv2 = nextTypeVar() in 
 let tv3 = nextTypeVar() in 
+match s with 
+| "S" -> 
 Quant(tv1, Quant (tv2, Quant (tv3, 
    funty (funty (TyV (tv1,0)) (funty (TyV(tv2,0)) (TyV(tv3,0)))) 
   (funty (funty(TyV(tv1,0)) (TyV(tv2,0))) (funty (TyV(tv1,0)) (TyV(tv3,0)))))))
+| "K" -> 
+Quant(tv1, Quant (tv2, 
+   (funty (TyV (tv1,0)) (funty (TyV(tv2,0)) (TyV(tv1,0))))))
+| "I" -> Quant(tv1,funty (TyV (tv1,0)) (TyV(tv1,0)))
+| "A" -> Quant(tv1, Quant (tv2, 
+   funty (funty (TyV (tv1,0)) (TyV(tv1,0)))
+         (funty (TyV (tv1,0)) (TyV(tv1,0)))))
+| "Tag" -> Quant(tv1, Quant (tv2, 
+   funty (funty (TyV (tv1,0)) (TyV(tv1,0)))
+         (funty (TyV (tv1,0)) (TyV(tv1,0)))))
+| "E" -> Quant(tv1, Quant (tv2, 
+   funty (TyV (tv1,0)) (funty (TyV(tv2,0)) (cvar "Bool"))))
+| _ -> termError [Operator s] "is not a recognised operator"
 
 
 and infer_operator str sEnv fixed sub0 expectedTy = 

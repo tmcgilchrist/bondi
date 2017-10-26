@@ -111,6 +111,7 @@ type value =
   | Vext of value ref 
   | Vref of value ref
   | Varray of value array
+  | Voperator of string
 (*> CPC *)
   | VtySub of sub
 (*< CPC *)

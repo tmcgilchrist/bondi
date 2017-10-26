@@ -68,6 +68,7 @@ type i_term =
   | Oper of string * i_term list
   | Apply of i_term * i_term
   | Lam of term_variable * i_term 
+  | Operator of string 
   | Case of  term_variable list option * i_term * i_term 
   | Choice of  i_term * i_term 
   | Over of  i_term * i_term 
