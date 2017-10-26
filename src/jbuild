@@ -1,5 +1,8 @@
 (jbuild_version 1)
 
+(ocamllex (lex))
+(ocamlyacc (parse))
+
 (executable
  ((name bondi)
   (public_name bondi)
