@@ -77,9 +77,10 @@ let keyword_table =          (* 97 is a prime larger than table size *)
   "then",      		 THEN;
   "to",        		 TO;
   "True",                TRUE;
-  "K",                   kOP;
-  "I",                   iOP;
-  "A",                   OP;
+  "S",                   SOP;
+  "K",                   KOP;
+  "I",                   IOP;
+  "A",                   AOP;
   "Tag",                 TAG;
   "E",                   EOP;
   "type",      		 TYPE;

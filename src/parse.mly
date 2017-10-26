@@ -415,12 +415,12 @@ simpleBondiTerm:
   | STRING              { p_datum (String $1) }
   | TRUE                { p_datum (Bool true) }
   | FALSE               { p_datum (Bool false)} 
-  | SOP { Poperator $1 }
-  | KOP { Poperator $1 }
-  | IOP { Poperator $1 }
-  | AOP { Poperator $1 }
-  | TAG { Poperator $1 }
-  | EOP { Poperator $1 }
+  | SOP { Poperator "S" }
+  | KOP { Poperator "K" }
+  | IOP { Poperator "I" }
+  | AOP { Poperator "A" }
+  | TAG { Poperator "Tag" }
+  | EOP { Poperator "E" }
   | UN                  { Pconstructor "Un" } 
   | REFCONS             { Pconstructor "Ref" } 
   | LBRACKET pTermCommaList RBRACKET
