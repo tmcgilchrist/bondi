@@ -126,7 +126,7 @@ let declare is_attribute identifier source =
 	      (t1,funty pty sty,sub1) 
 	  | _ -> typeError [ty1] "is not a method type" 
 	end
-    | Simple |Recursive _ | Extensible | Discontinuous -> infer source expectedTy 
+    | Simple |Recursive | Extensible | Discontinuous -> infer source expectedTy 
   in 
   globalRefVarSub := 
     TyMap.fold 
@@ -577,7 +577,7 @@ gTyEnvAdd (TyVar cl_tyv) ctr (Synonym(TyC (TyVar cl_tyv,ctr)));
     f_counter := "";
     match status with 
     | Method ->  add_decl status label pattern_as_this (Some cty) t
-    | Recursive _ -> let full_label = cl_str^"."^label in 
+    | Recursive -> let full_label = cl_str^"."^label in 
                    declare status (Ptvar full_label) (Plet(status,(Ptvar full_label),t,(Ptvar full_label)))
     | Discontinuous -> let full_label = cl_str^"."^label in 
                    declare status (Ptvar full_label) (Plet(status,(Ptvar full_label),t,(Ptvar full_label)))

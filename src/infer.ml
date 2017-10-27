@@ -1426,8 +1426,9 @@ and infer_sub_case x sEnv fixed sub0 expectedTy =
 
 and infer_let = function 
   | Simple -> infer_let_simple
-  | Linear -> basicError "infer_let Linear is not supported" 
-  | status -> infer_letrec status 
+  | Linear -> basicError "infer_let Linear is not supported"
+  | Recursive arity -> infer_let_rec arity 
+  | status -> infer_let_other status 
   
 and infer_let_simple param u t sEnv fixed sub0 expectedTy = 
   let (x,uty) = 
@@ -1444,7 +1445,47 @@ and infer_let_simple param u t sEnv fixed sub0 expectedTy =
   (sub3,Tlet(Simple,x,u1,t3))
 
 
-and infer_letrec status param u t sEnv fixed sub0 expectedTy =  
+
+and infer_let_rec arity param u t sEnv fixed sub0 expectedTy =  
+
+    match param with 
+      Ptvar x -> 
+	let uty = TyV(nextTypeVar(),0) in 
+	let sEnv1 = TMap.add (Var x) (uty,Recursive arity) sEnv in 
+        let (sub1,u1) = inf u sEnv1 fixed sub0 uty in
+	let (sub2,t2) = inf t sEnv1 fixed sub1 expectedTy 
+	in 
+	(sub2,
+	 match arity with 
+	 | 1 -> Apply(Lam (Var x, t2), Apply (Operator "Y2", Lam (Var x,u1)))
+	 | 2 -> Apply(Lam (Var x, t2), Apply (Operator "Y3", Lam (Var x,u1)))
+	 | 3 -> Apply(Lam (Var x, t2), Apply (Operator "Y4", Lam (Var x,u1)))
+	 | 4 -> Apply(Lam (Var x, t2), Apply (Operator "Y5", Lam (Var x,u1)))
+	 | _ -> Tlet(Recursive arity,Var x,u1,t2)
+)
+
+    | Ptyped(Ptvar x,pty) -> 
+	let uty = convert_type pty in 
+	let sch = clos_ty sub0 sEnv uty  in 
+
+	let sEnv1 = TMap.add (Var x) (sch,Recursive arity) sEnv in 
+	let fixed0 = append (freeTyVars sub0 uty)  fixed in 
+	let (sub1,u1) = inf u sEnv1 fixed0 sub0 uty in
+	let (sub2,t2) = inf t sEnv1 fixed0 sub1 expectedTy 
+	in 
+	(sub2,
+	 match arity with 
+	 | 1 -> Apply(Lam (Var x, t2), Apply (Operator "Y2", Lam (Var x,u1)))
+	 | 2 -> Apply(Lam (Var x, t2), Apply (Operator "Y3", Lam (Var x,u1)))
+	 | 3 -> Apply(Lam (Var x, t2), Apply (Operator "Y4", Lam (Var x,u1)))
+	 | 4 -> Apply(Lam (Var x, t2), Apply (Operator "Y5", Lam (Var x,u1)))
+	 | _ -> Tlet(Recursive arity,Var x,u1,t2)
+)
+
+    |_ -> basicError "Pletrec"  
+
+
+and infer_let_other status param u t sEnv fixed sub0 expectedTy =  
 
     match param with 
       Ptvar x -> 
@@ -1471,7 +1512,7 @@ and infer_letrec status param u t sEnv fixed sub0 expectedTy =
 
 (* old code 
 
-and infer_letrec status param u t sEnv fixed sub0 expectedTy =  
+and infer_let_other status param u t sEnv fixed sub0 expectedTy =  
 
   let (x,sch) = 
     match param with 

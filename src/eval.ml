@@ -114,7 +114,7 @@ and  (eval : value_env * i_term -> value) = fun (vEnv,term) ->
   | Choice(s,t) -> eval_choice vEnv s t 
   | Addcase (x,t,ty_opt) -> eval_add_case vEnv x t ty_opt
   | Tlet(Simple,x,u,s) -> evalLet vEnv x u s 
-  | Tlet(Recursive,x,u,s) -> evalLetRec vEnv x u s
+  | Tlet(Recursive _,x,u,s) -> evalLetRec vEnv x u s
   | Tlet(Extensible,x,u,s) -> evalLetExt vEnv x u s
   | Tlet(Discontinuous,x,u,s) -> evalLetExt vEnv x u s
   | _ -> basicError "Not currently evaluated!"

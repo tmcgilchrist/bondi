@@ -27,7 +27,8 @@ let make_nested_let bindings body =
   in 
   fold_right bind bindings body 
 
-let make_letrec (x,ps,r) t = Plet(Recursive,x,multilam ps r,t)
+let make_letrec (x,ps,r) t = Plet(Recursive (length ps),x,multilam ps r,t) 
+    (* no abstraction yet ! *) 
 
 let make_letext (x,ps,r) t = Plet(Extensible,x,multilam ps r,t)
 
@@ -191,7 +192,7 @@ shellAction:
 	  match x with 
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
-	in Let_decl(x,Plet(Recursive,x,multilam ps r, y))		 }  
+	in Let_decl(x,Plet(Recursive (length ps),x, multilam ps r, y)) 	 }  
    
   | LET EXT binding SEMISEMI 
       {
@@ -299,7 +300,7 @@ methd:
   | L_IDENT EQUAL LBRACE pTerm RBRACE
       { (Method,$1,$4) } 
   | STATIC REC L_IDENT EQUAL LBRACE pTerm RBRACE
-      { (Recursive,$3,$6) } 
+      { (Recursive 0,$3,$6) } 
   | STATIC EXT L_IDENT EQUAL LBRACE pTerm RBRACE   
       {	(Extensible,$3,$6) }
   | STATIC DISCONTINUOUS L_IDENT EQUAL LBRACE pTerm RBRACE

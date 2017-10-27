@@ -84,7 +84,7 @@ let make_list cars = fold_right l_cons cars (l_nil());;
 
 %token ALL AND AS BEGIN CLASS CLONE CPC DATATYPE DISCONTINUOUS DO 
 %token ELSE END ENTRY EQCONS EXT EXTENDS FALSE FOR FUN GENERALISE
-%token IF IN LENGTHV LET LIN MATCH METHOD NEW NEWARRAY ARRAY OF REC REF REST REFCONS SOP KOP IOP AOP TAG EOP SLEEP SPAWN
+%token IF IN LENGTHV LET LIN MATCH METHOD NEW NEWARRAY ARRAY OF REC REF REST REFCONS SOP KOP IOP AOP TAG EOP Y2 Y3 Y4 Y5 SLEEP SPAWN
 %token STATIC SUPER THEN TO TRUE 
 %token TYPE UN VIEW WHERE WHILE WITH ISREF ISARRAY
 
@@ -419,8 +419,12 @@ simpleBondiTerm:
   | KOP { Poperator "K" }
   | IOP { Poperator "I" }
   | AOP { Poperator "A" }
-  | TAG { Poperator "Tag" }
+  | TAG { Poperator "TAG" }
   | EOP { Poperator "E" }
+  | Y2 { Poperator "Y2" }
+  | Y3 { Poperator "Y3" }
+  | Y4 { Poperator "Y4" }
+  | Y5 { Poperator "Y5" }
   | UN                  { Pconstructor "Un" } 
   | REFCONS             { Pconstructor "Ref" } 
   | LBRACKET pTermCommaList RBRACKET

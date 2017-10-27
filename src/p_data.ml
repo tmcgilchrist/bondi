@@ -53,7 +53,13 @@ type p_term =
   | Ppcase of p_term * p_term
 and name_form = Variable | Protected | Binding
 (*< CPC *)
-and let_status = Simple | Recursive | Extensible | Linear | Method | Discontinuous
+and let_status = 
+    Simple 
+| Recursive of int 
+| Extensible
+| Linear 
+| Method 
+| Discontinuous
 and p_case = identifier list option * p_term * p_type option * p_term 
 type add_case = identifier * p_case
 type simple_datatype_declaration = 
