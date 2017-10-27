@@ -272,6 +272,60 @@ and evalAp_opt x0 arg =
      | _ ->
          Some (if x1 = arg then Vdatum (Bool true) else Vdatum (Bool false))
      end
+  | Vapply(Voperator "Y2",f) ->
+      begin 
+	match evalAp_opt f x0 with 
+	| Some x1 -> evalAp_opt x1 arg 
+	| None -> None 
+      end
+  | Vapply (Vapply(Voperator "Y3",f) as g,arg0) -> 
+      begin 
+	match evalAp_opt f g  with 
+	| Some x1 -> 
+	    begin
+	      match evalAp_opt x1 arg0 with 
+	      | Some x2 -> evalAp_opt x2 arg 
+	      | _ -> None 
+	    end
+	| None -> None 
+      end 
+  | Vapply (Vapply (Vapply(Voperator "Y4",f) as g,arg0), arg1) -> 
+      begin 
+	match evalAp_opt f g  with 
+	| Some x1 -> 
+	    begin
+	      match evalAp_opt x1 arg0 with 
+	      | Some x2 -> 
+		  begin
+		    match evalAp_opt x2 arg1 with 
+		    | Some x3 -> evalAp_opt x3 arg
+		    | _ -> None 
+		  end
+	      | _ -> None 
+	    end
+	| None -> None 
+      end 
+  | Vapply(Vapply(Vapply(Vapply(Voperator "Y5",f) as g,arg0), arg1),arg2) -> 
+      begin 
+	match evalAp_opt f g  with 
+	| Some x1 -> 
+	    begin
+	      match evalAp_opt x1 arg0 with 
+	      | Some x2 -> 
+		  begin
+		    match evalAp_opt x2 arg1 with 
+		    | Some x3 -> 
+			begin
+			  match evalAp_opt x3 arg2 with 
+			  | Some x4 -> evalAp_opt x4 arg
+			  | _ -> None 
+			end
+		    | _ -> None 
+		  end
+	      | _ -> None 
+	    end
+	| None -> None 
+      end 
   | _ -> Some (Vapply(x0,arg))
 
 
