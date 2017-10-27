@@ -726,12 +726,14 @@ Quant(tv1, Quant (tv2, Quant (tv3,
 Quant(tv1, Quant (tv2, 
    (funty (TyV (tv1,0)) (funty (TyV(tv2,0)) (TyV(tv1,0))))))
 | "I" -> Quant(tv1,funty (TyV (tv1,0)) (TyV(tv1,0)))
-| "A" -> Quant(tv1, Quant (tv2, 
-   funty (funty (TyV (tv1,0)) (TyV(tv1,0)))
-         (funty (TyV (tv1,0)) (TyV(tv1,0)))))
-| "Tag" -> Quant(tv1, Quant (tv2, 
-   funty (funty (TyV (tv1,0)) (TyV(tv1,0)))
-         (funty (TyV (tv1,0)) (TyV(tv1,0)))))
+| "A" -> 
+Quant(tv1, Quant (tv2, Quant (tv3, 
+   funty 
+     (funty (TyV (tv1,0)) (funty (TyV(tv2,0)) (TyV(tv3,0))))
+     (funty (TyV (tv1,0)) (funty (TyV(tv2,0)) (TyV(tv3,0)))))))
+| "TAG" -> Quant(tv1, Quant (tv2, 
+   funty (funty (TyV (tv1,0)) (TyV(tv2,0)))
+         (funty (TyV (tv1,0)) (TyV(tv2,0)))))
 | "E" -> Quant(tv1, Quant (tv2, 
    funty (TyV (tv1,0)) (funty (TyV(tv2,0)) (cvar "Bool"))))
 | _ -> termError [Operator s] "is not a recognised operator"

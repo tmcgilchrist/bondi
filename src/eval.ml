@@ -238,7 +238,40 @@ and evalAp_opt x0 arg =
         | Vwildcard str -> Some (Vdatum (String str))
         | _ -> Some(Vdatum(String "tame"))
       end 
-
+  | Vapply (Vapply (Voperator "S", x1), x2) -> 
+      begin
+      match (evalAp_opt x1 arg, evalAp_opt x2 arg) with 
+      | (Some z1, Some z2) -> evalAp_opt z1 z2 
+      | _ -> None 
+      end
+ | Vapply (Voperator "K", x1) -> 
+      Some x1
+  | Voperator "I" ->
+      Some arg
+  | Vapply (Vapply (Voperator "A", x1), x2) -> 
+     begin
+     match (evalAp_opt x1 x2) with 
+     | Some z1 -> evalAp_opt z1 arg
+     | None    -> None          
+     end 
+  | Vapply (Vapply (Voperator "TAG", x1), x2) ->  (* Tag do not perform any evaluation *)
+    Some(Vapply(Vapply(Voperator "TAG", 
+		       Vapply (Vapply (Voperator "TAG", x1), x2)), arg))
+  | Vapply (Voperator "E", x1) ->
+     begin
+     match (x1,arg) with 
+     | (Vapply (x11,x12), Vapply (arg1,arg2)) -> 
+	 begin
+	 match (evalAp_opt (Vapply (Voperator "E", x11)) arg1,
+		evalAp_opt (Vapply (Voperator "E", x12)) arg2)
+	     with 
+	 | (Some (Vdatum (Bool true)), Some (Vdatum (Bool true))) -> 
+	     Some (Vdatum (Bool true))
+	 | _ -> Some (Vdatum (Bool false))
+	 end
+     | _ ->
+         Some (if x1 = arg then Vdatum (Bool true) else Vdatum (Bool false))
+     end
   | _ -> Some (Vapply(x0,arg))
 
 
@@ -253,6 +286,12 @@ and evalSuper = function
   
 
 and evalAp vEnv x y =
+(* 
+  match x with 
+  | Apply (Apply (Operator "S", x1), x2) -> 
+      evalAp vEnv (Apply (x1,y)) (Apply(x2,y))
+  | _ -> 
+*) 
   match evalAp_opt (eval(vEnv,x)) (eval(vEnv,y)) with 
     Some z -> z 
   | None->  if get_mode "nomatch" = Show_on 

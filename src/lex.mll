@@ -81,7 +81,7 @@ let keyword_table =          (* 97 is a prime larger than table size *)
   "K",                   KOP;
   "I",                   IOP;
   "A",                   AOP;
-  "Tag",                 TAG;
+  "TAG",                 TAG;
   "E",                   EOP;
   "type",      		 TYPE;
   "Un",                  UN;

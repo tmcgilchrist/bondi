@@ -419,7 +419,7 @@ simpleBondiTerm:
   | KOP { Poperator "K" }
   | IOP { Poperator "I" }
   | AOP { Poperator "A" }
-  | TAG { Poperator "Tag" }
+  | TAG { Poperator "TAG" }
   | EOP { Poperator "E" }
   | UN                  { Pconstructor "Un" } 
   | REFCONS             { Pconstructor "Ref" } 
