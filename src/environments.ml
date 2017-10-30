@@ -98,6 +98,7 @@ type value =
   | Vext of value ref (* for extensible functions and methods *) 
   | Vref of value ref
   | Varray of value array
+  | Voperator of string
 (*> CPC *)
   | VtySub of sub
 (*< CPC *)

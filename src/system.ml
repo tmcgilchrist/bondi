@@ -3,7 +3,7 @@
 let version = "2.09" 
 
 let standard_library_default = 
-  Printf.sprintf " %s/.bondi/prelude" (Unix.getenv "HOME")
+  Printf.sprintf "%s/.bondi" (Unix.getenv "HOME")
 
 let standard_library =
   try

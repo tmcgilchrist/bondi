@@ -27,7 +27,8 @@ let make_nested_let bindings body =
   in 
   fold_right bind bindings body 
 
-let make_letrec (x,ps,r) t = Plet(Recursive,x,multilam ps r,t)
+let make_letrec (x,ps,r) t = Plet(Recursive (length ps),x,multilam ps r,t) 
+    (* no abstraction yet ! *) 
 
 let make_letext (x,ps,r) t = Plet(Extensible,x,multilam ps r,t)
 
@@ -84,7 +85,7 @@ let make_list cars = fold_right l_cons cars (l_nil());;
 
 %token ALL AND AS BEGIN CLASS CLONE CPC DATATYPE DISCONTINUOUS DO 
 %token ELSE END ENTRY EQCONS EXT EXTENDS FALSE FOR FUN GENERALISE
-%token IF IN LENGTHV LET LIN MATCH METHOD NEW NEWARRAY ARRAY OF REC REF REST REFCONS SOP KOP IOP AOP TAG EOP SLEEP SPAWN
+%token IF IN LENGTHV LET LIN MATCH METHOD NEW NEWARRAY ARRAY OF REC REF REST REFCONS SOP KOP IOP AOP TAG EOP Y2 Y3 Y4 Y5 SLEEP SPAWN
 %token STATIC SUPER THEN TO TRUE 
 %token TYPE UN VIEW WHERE WHILE WITH ISREF ISARRAY
 
@@ -191,7 +192,7 @@ shellAction:
 	  match x with 
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
-	in Let_decl(x,Plet(Recursive,x,multilam ps r, y))		 }  
+	in Let_decl(x,Plet(Recursive (length ps),x, multilam ps r, y)) 	 }  
    
   | LET EXT binding SEMISEMI 
       {
@@ -299,7 +300,7 @@ methd:
   | L_IDENT EQUAL LBRACE pTerm RBRACE
       { (Method,$1,$4) } 
   | STATIC REC L_IDENT EQUAL LBRACE pTerm RBRACE
-      { (Recursive,$3,$6) } 
+      { (Recursive 0,$3,$6) } 
   | STATIC EXT L_IDENT EQUAL LBRACE pTerm RBRACE   
       {	(Extensible,$3,$6) }
   | STATIC DISCONTINUOUS L_IDENT EQUAL LBRACE pTerm RBRACE
@@ -419,8 +420,12 @@ simpleBondiTerm:
   | KOP { Poperator "K" }
   | IOP { Poperator "I" }
   | AOP { Poperator "A" }
-  | TAG { Poperator "Tag" }
+  | TAG { Poperator "TAG" }
   | EOP { Poperator "E" }
+  | Y2 { Poperator "Y2" }
+  | Y3 { Poperator "Y3" }
+  | Y4 { Poperator "Y4" }
+  | Y5 { Poperator "Y5" }
   | UN                  { Pconstructor "Un" } 
   | REFCONS             { Pconstructor "Ref" } 
   | LBRACKET pTermCommaList RBRACKET

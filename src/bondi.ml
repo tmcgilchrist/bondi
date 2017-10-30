@@ -65,6 +65,8 @@ let basic_paths = "." :: (try [System.standard_library] with Not_found -> [])
 (* Resolving file names  *)
 
 let full_name name dir = 
+  print_endline name;
+  print_endline dir;
   let dir_name = Filename.concat dir name 
   in 
   if file_exists dir_name

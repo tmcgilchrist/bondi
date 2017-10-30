@@ -109,11 +109,12 @@ and  (eval : value_env * i_term -> value) = fun (vEnv,term) ->
   | Oper(d,args) -> eval_oper vEnv d args
   | Apply(x,y) -> evalAp vEnv x y 
   | Lam(x,s) -> Vlam(x,ref vEnv,s)
+  | Operator s -> Voperator s
   | Case(theta_opt,p,s) -> eval_case vEnv (theta_opt,p,s)  
   | Choice(s,t) -> eval_choice vEnv s t 
   | Addcase (x,t,ty_opt) -> eval_add_case vEnv x t ty_opt
   | Tlet(Simple,x,u,s) -> evalLet vEnv x u s 
-  | Tlet(Recursive,x,u,s) -> evalLetRec vEnv x u s
+  | Tlet(Recursive _,x,u,s) -> evalLetRec vEnv x u s
   | Tlet(Extensible,x,u,s) -> evalLetExt vEnv x u s
   | Tlet(Discontinuous,x,u,s) -> evalLetExt vEnv x u s
   | _ -> basicError "Not currently evaluated!"
@@ -237,7 +238,94 @@ and evalAp_opt x0 arg =
         | Vwildcard str -> Some (Vdatum (String str))
         | _ -> Some(Vdatum(String "tame"))
       end 
-
+  | Vapply (Vapply (Voperator "S", x1), x2) -> 
+      begin
+      match (evalAp_opt x1 arg, evalAp_opt x2 arg) with 
+      | (Some z1, Some z2) -> evalAp_opt z1 z2 
+      | _ -> None 
+      end
+ | Vapply (Voperator "K", x1) -> 
+      Some x1
+  | Voperator "I" ->
+      Some arg
+  | Vapply (Vapply (Voperator "A", x1), x2) -> 
+     begin
+     match (evalAp_opt x1 x2) with 
+     | Some z1 -> evalAp_opt z1 arg
+     | None    -> None          
+     end 
+  | Vapply (Vapply (Voperator "TAG", x1), x2) ->  (* Tag do not perform any evaluation *)
+    Some(Vapply(Vapply(Voperator "TAG", 
+		       Vapply (Vapply (Voperator "TAG", x1), x2)), arg))
+  | Vapply (Voperator "E", x1) ->
+     begin
+     match (x1,arg) with 
+     | (Vapply (x11,x12), Vapply (arg1,arg2)) -> 
+	 begin
+	 match (evalAp_opt (Vapply (Voperator "E", x11)) arg1,
+		evalAp_opt (Vapply (Voperator "E", x12)) arg2)
+	     with 
+	 | (Some (Vdatum (Bool true)), Some (Vdatum (Bool true))) -> 
+	     Some (Vdatum (Bool true))
+	 | _ -> Some (Vdatum (Bool false))
+	 end
+     | _ ->
+         Some (if x1 = arg then Vdatum (Bool true) else Vdatum (Bool false))
+     end
+  | Vapply(Voperator "Y2",f) ->
+      begin 
+	match evalAp_opt f x0 with 
+	| Some x1 -> evalAp_opt x1 arg 
+	| None -> None 
+      end
+  | Vapply (Vapply(Voperator "Y3",f) as g,arg0) -> 
+      begin 
+	match evalAp_opt f g  with 
+	| Some x1 -> 
+	    begin
+	      match evalAp_opt x1 arg0 with 
+	      | Some x2 -> evalAp_opt x2 arg 
+	      | _ -> None 
+	    end
+	| None -> None 
+      end 
+  | Vapply (Vapply (Vapply(Voperator "Y4",f) as g,arg0), arg1) -> 
+      begin 
+	match evalAp_opt f g  with 
+	| Some x1 -> 
+	    begin
+	      match evalAp_opt x1 arg0 with 
+	      | Some x2 -> 
+		  begin
+		    match evalAp_opt x2 arg1 with 
+		    | Some x3 -> evalAp_opt x3 arg
+		    | _ -> None 
+		  end
+	      | _ -> None 
+	    end
+	| None -> None 
+      end 
+  | Vapply(Vapply(Vapply(Vapply(Voperator "Y5",f) as g,arg0), arg1),arg2) -> 
+      begin 
+	match evalAp_opt f g  with 
+	| Some x1 -> 
+	    begin
+	      match evalAp_opt x1 arg0 with 
+	      | Some x2 -> 
+		  begin
+		    match evalAp_opt x2 arg1 with 
+		    | Some x3 -> 
+			begin
+			  match evalAp_opt x3 arg2 with 
+			  | Some x4 -> evalAp_opt x4 arg
+			  | _ -> None 
+			end
+		    | _ -> None 
+		  end
+	      | _ -> None 
+	    end
+	| None -> None 
+      end 
   | _ -> Some (Vapply(x0,arg))
 
 
@@ -252,6 +340,12 @@ and evalSuper = function
   
 
 and evalAp vEnv x y =
+(* 
+  match x with 
+  | Apply (Apply (Operator "S", x1), x2) -> 
+      evalAp vEnv (Apply (x1,y)) (Apply(x2,y))
+  | _ -> 
+*) 
   match evalAp_opt (eval(vEnv,x)) (eval(vEnv,y)) with 
     Some z -> z 
   | None->  if get_mode "nomatch" = Show_on 
