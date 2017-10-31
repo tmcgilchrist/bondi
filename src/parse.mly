@@ -27,9 +27,10 @@ let make_nested_let bindings body =
   in 
   fold_right bind bindings body 
 
-let make_letrec (x,ps0,r) t =
+let make_letrec (x,ps0,r) t = Plet(Recursive, x, multilam ps0 r, t)
+(* restore 
   match ps0 with 
-  | [] -> Plet(Simple, x, r, t)
+  | [] -> Plet(Recursive, x, r, t)
   | p :: ps -> 
   match length ps with 
   | 0 -> Plet(Simple,x, Papply(Poperator "Y2",Plam (p,ps,r)),t)  
@@ -37,6 +38,7 @@ let make_letrec (x,ps0,r) t =
   | 2 -> Plet(Simple,x, Papply(Poperator "Y4",Plam (p,ps,r)),t)  
   | _ -> Plet(Recursive,x, Plam (p,ps,r),t) 
     (* no abstraction yet ! *) 
+*) 
 
 let make_letext (x,ps,r) t = Plet(Extensible,x,multilam ps r, t)
 
@@ -203,14 +205,15 @@ shellAction:
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
 	in 
-	let body = match ps with 
-	| [] -> Plet(Simple,x,r,y)
-	| p::ps1 -> 
-	    match length ps1 with 
-	    | 0 -> Plet(Simple,x, Papply(Poperator "Y2",Plam (p,ps1,r)),y)  
-	    | 1 -> Plet(Simple,x, Papply(Poperator "Y3",Plam (p,ps1,r)),y)  
-	    | 2 -> Plet(Simple,x, Papply(Poperator "Y4",Plam (p,ps1,r)),y)
-	    | _ -> Plet(Recursive,x, Plam (p,ps1,r),y) 
+	let body = 
+	  match length ps with 
+	  | 1 -> Plet(Simple,x, Papply(Poperator "Y2",multilam ps r),y)  
+	  | 2 -> Plet(Simple,x, Papply(Poperator "Y3",multilam ps r),y)  
+	  | 3 -> Plet(Simple,x, Papply(Poperator "Y4",multilam ps r),y)
+	  | _ -> 
+(Format.print_string "got it";
+Plet(Recursive,x, multilam ps r,y) 
+)
 	in 
 	Let_decl(x,body)
      }
@@ -223,10 +226,7 @@ shellAction:
 	  match x with 
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
-	in 
-	match ps with 
-	| [] ->  Let_decl(x,Plet(Extensible,x,r, y))
-	| p :: ps1 -> Let_decl(x,Plet(Extensible,x,Plam(p,ps1,r), y))		 }  
+	in Let_decl(x,Plet(Extensible,x,multilam ps r, y))		 }  
    
   | LET METHOD binding SEMISEMI 
       {
@@ -236,10 +236,7 @@ shellAction:
 	  match x with 
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
-	in 
-	match ps with 
-	| [] ->  Let_decl(x,Plet(Method,x,r, y))
-	| p :: ps1 -> Let_decl(x,Plet(Method,x,Plam(p,ps1,r), y))		 }  
+	in Let_decl(x,Plet(Method,x,multilam ps r, y))		 }  
 
   | LET DISCONTINUOUS binding SEMISEMI 
       {
@@ -249,10 +246,7 @@ shellAction:
 	  match x with 
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
-	in 
-	match ps with 
-	| [] ->  Let_decl(x,Plet(Discontinuous,x,r, y))
-	| p :: ps1 -> Let_decl(x,Plet(Discontinuous,x,Plam(p,ps1,r), y)) }  
+	in Let_decl(x,Plet(Discontinuous,x,multilam ps r, y))	 }  
 
   | TYPE typeBinding SEMISEMI
       { match $2 with (x,t) ->

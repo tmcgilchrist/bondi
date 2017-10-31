@@ -42,7 +42,7 @@ let ext (select: (all a . a -> Maybe b) -> c -> List b) =  fun f ->
 	| y -> some_append (f y) [] 
 ;;
 
-(* deprecating linear types 
+
 let is = fun (x: lin a) ->  ((| {y} y as x -> Some y | _ -> None): b -> Maybe a)
 ;;
-*) 
+

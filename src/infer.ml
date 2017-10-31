@@ -425,7 +425,6 @@ let infer_datum d sEnv fixed sub0 expectedTy =
   (subunify fixed sub0 (cvar (datum_type_string d)) expectedTy,Datum d)
 
 
-(* deprecated ? 
 let rec inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status = 
   (* status to allow that the static pattern x y has x linear and y not *) 
 
@@ -574,7 +573,14 @@ let rec inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status =
 	    let (sub1,p1,delta1,tyEnv1,pty1) = inf_linear (multilam xs p0) sEnv fixed tyEnv theta sub0 (Some ty2) status 
 	    in 
 	    if TMap.mem (Var x) tyEnv1 
-	    then  (sub1,Lam(Var x,p1),delta1,TMap.remove (Var x) tyEnv1,funty (applySub sub1 ty1) pty1)
+	    then  
+match p1 with 
+| Lam (x1,xs1,p2) -> (sub1,Lam(Var x,x1 ::xs1,p2),delta1,
+		      TMap.remove (Var x) tyEnv1,
+		      funty (applySub sub1 ty1) pty1)
+| _ -> (sub1,Lam(Var x,[],p1),delta1,
+		      TMap.remove (Var x) tyEnv1,
+		      funty (applySub sub1 ty1) pty1)
 	    else pTermError [p] "is not linear"
 	| Some vars -> 
 	    let (sub1,p1,delta1,tyEnv1,pty1) = inf_linear (multilam xs p0) sEnv fixed tyEnv (Some ((Var x):: vars)) sub0 (Some ty2) status in 
@@ -582,7 +588,11 @@ let rec inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status =
 	      try fst(TMap.find (Var x) tyEnv1)
 	      with Not_found -> pTermError [Ptvar x] "is a missing binding symbol"
 	    in 
-	    (sub1,Lam(Var x,p1),delta1,TMap.remove (Var x) tyEnv1,applySub sub1 (funty argty pty1))
+match p1 with 
+| Lam (x1,xs1,p2) ->
+	    (sub1,Lam(Var x,x1::xs1,p2),delta1,TMap.remove (Var x) tyEnv1,applySub sub1 (funty argty pty1))
+| _ -> 
+	    (sub1,Lam(Var x,[],p1),delta1,TMap.remove (Var x) tyEnv1,applySub sub1 (funty argty pty1))
       end
 
 (* it is theoretically possible to allow linear cases, 
@@ -611,9 +621,9 @@ let rec inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status =
 *)
 
   | _ -> pTermError [p] "is not linear"
-*) 
 
-let rec inf_linear_or_var p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status = 
+
+and inf_linear_or_var p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status = 
   let (pty,delta0) = 
     match pty_opt with 
       None -> 
@@ -650,11 +660,7 @@ let rec inf_linear_or_var p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt sta
 	in 
 	(sub,Tvar(x1,n),[],tyEnv,ty)
 
-  | _ -> basicError "linearity is not supported here" 
-(* 
-inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status 
-*)
-
+  | _ -> inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status 
 
 and inf = 
   (* 
@@ -969,11 +975,10 @@ and infer_ap_fun_first r u sEnv fixed sub0 expectedTy =
   in 
   let (sub2,u2,uty2) = 
     match applySub sub1 rty with 
-      Funty(Linty _,_) -> basicError "linear types not here supported" 
-(* 
-	let (sub3,u3,_,_,uty3) = inf_linear u sEnv fixed TMap.empty (Some []) sub1 None Simple in 
+      Funty(Linty _,_) -> 
+	let (sub3,u3,_,_,uty3) = 
+	  inf_linear u sEnv fixed TMap.empty (Some []) sub1 None Simple in 
 	(sub3,u3,Linty uty3) 
-*) 
     | _ -> 
 	let uty = TyV (nextTypeVar(),0) in 
 	let (sub3,u3) = inf u sEnv fixed sub1 uty in 
@@ -1004,10 +1009,10 @@ and infer_ap_fun_first r u sEnv fixed sub0 expectedTy =
 
 
 and infer_lam p ps s sEnv fixed sub0 expectedTy = 
-(* deleting linearity from this code *) 
   let (x,pty) = 
     match p with 
       Ptvar x  -> (Var x,TyV(nextTypeVar(),0))
+(* restore the linear case ?  *) 
     | Ptyped(Ptvar x,pty) -> (Var x,convert_type pty)
     | _ -> pTermError [p] "should be a variable in abstraction" 
   in
@@ -1023,8 +1028,7 @@ and infer_lam p ps s sEnv fixed sub0 expectedTy =
   | Lam(x1,xs1,s1) -> (sub2,Lam(x, x::xs1,s1))
   | _ -> (sub2,Lam(x,[],s2))
 
-(*
-and infer_lin p s sEnv fixed sub0 expectedTy = 
+and infer_lin p ps s sEnv fixed sub0 expectedTy = 
   let (x,pty) = 
     match p with 
       Ptvar x  -> (Var x,TyV(nextTypeVar(),0))
@@ -1037,12 +1041,15 @@ and infer_lin p s sEnv fixed sub0 expectedTy =
   let sub1 = subunify fixed sub0 the_ty expectedTy 
   in
   let sEnv1 = TMap.add x (pty,Linear) sEnv in   
-  let (sub2,s2) = inf s sEnv1 fixed sub1 rty
+  let (sub2,s2) = inf (multilam ps s) sEnv1 fixed sub1 rty
   in 
-  let the_term = Lam(x,s2)
+  let the_term = 
+    match s2 with 
+    | Lam(x1,xs1,s3) -> Lam(x,x::xs1,s3)
+    | _ -> Lam(x,[],s2)
   in 
   (sub2,the_term)
-*)
+
 
 and infer_case (xs_opt,p,pty_opt,s) is_att sEnv fixed sub0 default_ty = 
   let theta = 
@@ -1447,9 +1454,7 @@ and infer_let_simple param u t sEnv fixed sub0 expectedTy =
   (sub3,Tlet(Simple,x,u1,t3))
 
 
-
 and infer_let_rec param u t sEnv fixed sub0 expectedTy =  
-
     match param with 
       Ptvar x -> 
 	let uty = TyV(nextTypeVar(),0) in 
