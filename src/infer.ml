@@ -425,7 +425,7 @@ let infer_datum d sEnv fixed sub0 expectedTy =
   (subunify fixed sub0 (cvar (datum_type_string d)) expectedTy,Datum d)
 
 
-
+(* deprecated ? 
 let rec inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status = 
   (* status to allow that the static pattern x y has x linear and y not *) 
 
@@ -562,7 +562,7 @@ let rec inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status =
 	(sub3,Oper("as",[p3;p1]),append delta1 delta3, tyEnv3,pty3)
 
 
-  | Plam(Ptvar x,p0) -> 
+  | Plam(Ptvar x,xs,p0) -> 
       let ty1 = TyV(nextTypeVar(),0) in 
       let ty2 = TyV(nextTypeVar(),0) in 
       let sub0 = unify [] sub (funty ty1 ty2) pty in        
@@ -571,13 +571,13 @@ let rec inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status =
 	  None -> 
 
 
-	    let (sub1,p1,delta1,tyEnv1,pty1) = inf_linear p0 sEnv fixed tyEnv theta sub0 (Some ty2) status 
+	    let (sub1,p1,delta1,tyEnv1,pty1) = inf_linear (multilam xs p0) sEnv fixed tyEnv theta sub0 (Some ty2) status 
 	    in 
 	    if TMap.mem (Var x) tyEnv1 
 	    then  (sub1,Lam(Var x,p1),delta1,TMap.remove (Var x) tyEnv1,funty (applySub sub1 ty1) pty1)
 	    else pTermError [p] "is not linear"
 	| Some vars -> 
-	    let (sub1,p1,delta1,tyEnv1,pty1) = inf_linear p0 sEnv fixed tyEnv (Some ((Var x):: vars)) sub0 (Some ty2) status in 
+	    let (sub1,p1,delta1,tyEnv1,pty1) = inf_linear (multilam xs p0) sEnv fixed tyEnv (Some ((Var x):: vars)) sub0 (Some ty2) status in 
 	    let argty = 
 	      try fst(TMap.find (Var x) tyEnv1)
 	      with Not_found -> pTermError [Ptvar x] "is a missing binding symbol"
@@ -590,7 +590,7 @@ let rec inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status =
    
      | Pcases [(None,p0,None,s0)] -> (* a single, static, case, without a type for the pattern  *) 
 
-      let (sub1,p1,delta1,tyEnv1,pty1) = inf_linear p0 sEnv fixed TMap.empty None sub None 
+      let (sub1,p1,delta1,tyEnv1,pty1) = inf_linear (multilam xs p0) sEnv fixed TMap.empty None sub None 
       in 
       let (sub2,sty) = 
 	match applySub sub1 pty with 
@@ -611,9 +611,9 @@ let rec inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status =
 *)
 
   | _ -> pTermError [p] "is not linear"
+*) 
 
-
-and inf_linear_or_var p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status = 
+let rec inf_linear_or_var p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status = 
   let (pty,delta0) = 
     match pty_opt with 
       None -> 
@@ -650,8 +650,10 @@ and inf_linear_or_var p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status 
 	in 
 	(sub,Tvar(x1,n),[],tyEnv,ty)
 
-  | _ -> inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status 
-
+  | _ -> basicError "linearity is not supported here" 
+(* 
+inf_linear p (sEnv: scheme_env) fixed tyEnv theta sub pty_opt status 
+*)
 
 
 and inf = 
@@ -690,7 +692,7 @@ function
   | Poper("entry",[v;t]) -> infer_entry v t 
   | Poper(d,args) -> infer_oper d args 
   | Papply (f, x) -> infer_ap f x 
-  | Plam(p,s) -> infer_lam p s
+  | Plam(p,ps,s) -> infer_lam p ps s
   | Poperator s -> infer_operator s
 (*
   | Plin (p,s) -> infer_lin p s
@@ -967,9 +969,11 @@ and infer_ap_fun_first r u sEnv fixed sub0 expectedTy =
   in 
   let (sub2,u2,uty2) = 
     match applySub sub1 rty with 
-      Funty(Linty _,_) -> 
+      Funty(Linty _,_) -> basicError "linear types not here supported" 
+(* 
 	let (sub3,u3,_,_,uty3) = inf_linear u sEnv fixed TMap.empty (Some []) sub1 None Simple in 
 	(sub3,u3,Linty uty3) 
+*) 
     | _ -> 
 	let uty = TyV (nextTypeVar(),0) in 
 	let (sub3,u3) = inf u sEnv fixed sub1 uty in 
@@ -999,27 +1003,25 @@ and infer_ap_fun_first r u sEnv fixed sub0 expectedTy =
 
 
 
-and infer_lam p s sEnv fixed sub0 expectedTy = 
-  let (x,status,pty) = 
+and infer_lam p ps s sEnv fixed sub0 expectedTy = 
+(* deleting linearity from this code *) 
+  let (x,pty) = 
     match p with 
-      Ptvar x  -> (Var x,Simple,TyV(nextTypeVar(),0))
-    | Ptyped(Ptvar x,Plinty pty) -> (Var x,Linear,convert_type pty)
-    | Ptyped(Ptvar x,pty) -> (Var x,Simple,convert_type pty)
+      Ptvar x  -> (Var x,TyV(nextTypeVar(),0))
+    | Ptyped(Ptvar x,pty) -> (Var x,convert_type pty)
     | _ -> pTermError [p] "should be a variable in abstraction" 
   in
-  let sEnv1 = TMap.add x (pty,status) sEnv in
-  let pty1 = match status with 
-  | Linear -> Linty pty
-  | _ -> pty 
-  in  
+  let sEnv1 = TMap.add x (pty,Simple) sEnv in
   let rty = TyV(nextTypeVar(),0) in 
-  let the_ty = funty pty1 rty 
+  let the_ty = funty pty rty 
   in 
   let sub1 = unify fixed sub0 the_ty expectedTy 
   in
-  let (sub2,s2) = inf s sEnv1 fixed sub1 rty
-  in 
-  (sub2,Lam(x,s2))
+  let (sub2,s2) = inf (multilam ps s) sEnv1 fixed sub1 rty
+  in
+  match s2 with 
+  | Lam(x1,xs1,s1) -> (sub2,Lam(x, x::xs1,s1))
+  | _ -> (sub2,Lam(x,[],s2))
 
 (*
 and infer_lin p s sEnv fixed sub0 expectedTy = 
@@ -1427,7 +1429,7 @@ and infer_sub_case x sEnv fixed sub0 expectedTy =
 and infer_let = function 
   | Simple -> infer_let_simple
   | Linear -> basicError "infer_let Linear is not supported"
-  | Recursive arity -> infer_let_rec arity 
+  | Recursive -> infer_let_rec 
   | status -> infer_let_other status 
   
 and infer_let_simple param u t sEnv fixed sub0 expectedTy = 
@@ -1446,41 +1448,27 @@ and infer_let_simple param u t sEnv fixed sub0 expectedTy =
 
 
 
-and infer_let_rec arity param u t sEnv fixed sub0 expectedTy =  
+and infer_let_rec param u t sEnv fixed sub0 expectedTy =  
 
     match param with 
       Ptvar x -> 
 	let uty = TyV(nextTypeVar(),0) in 
-	let sEnv1 = TMap.add (Var x) (uty,Recursive arity) sEnv in 
+	let sEnv1 = TMap.add (Var x) (uty,Recursive) sEnv in 
         let (sub1,u1) = inf u sEnv1 fixed sub0 uty in
 	let (sub2,t2) = inf t sEnv1 fixed sub1 expectedTy 
 	in 
-	(sub2,
-	 match arity with 
-	 | 1 -> Apply(Lam (Var x, t2), Apply (Operator "Y2", Lam (Var x,u1)))
-	 | 2 -> Apply(Lam (Var x, t2), Apply (Operator "Y3", Lam (Var x,u1)))
-	 | 3 -> Apply(Lam (Var x, t2), Apply (Operator "Y4", Lam (Var x,u1)))
-	 | 4 -> Apply(Lam (Var x, t2), Apply (Operator "Y5", Lam (Var x,u1)))
-	 | _ -> Tlet(Recursive arity,Var x,u1,t2)
-)
+	(sub2,Tlet(Recursive,Var x,u1,t2))
 
     | Ptyped(Ptvar x,pty) -> 
 	let uty = convert_type pty in 
 	let sch = clos_ty sub0 sEnv uty  in 
 
-	let sEnv1 = TMap.add (Var x) (sch,Recursive arity) sEnv in 
+	let sEnv1 = TMap.add (Var x) (sch,Recursive) sEnv in 
 	let fixed0 = append (freeTyVars sub0 uty)  fixed in 
 	let (sub1,u1) = inf u sEnv1 fixed0 sub0 uty in
 	let (sub2,t2) = inf t sEnv1 fixed0 sub1 expectedTy 
 	in 
-	(sub2,
-	 match arity with 
-	 | 1 -> Apply(Lam (Var x, t2), Apply (Operator "Y2", Lam (Var x,u1)))
-	 | 2 -> Apply(Lam (Var x, t2), Apply (Operator "Y3", Lam (Var x,u1)))
-	 | 3 -> Apply(Lam (Var x, t2), Apply (Operator "Y4", Lam (Var x,u1)))
-	 | 4 -> Apply(Lam (Var x, t2), Apply (Operator "Y5", Lam (Var x,u1)))
-	 | _ -> Tlet(Recursive arity,Var x,u1,t2)
-)
+	(sub2,Tlet(Recursive,Var x,u1,t2))
 
     |_ -> basicError "Pletrec"  
 

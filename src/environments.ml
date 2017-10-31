@@ -54,7 +54,7 @@ type i_term =
   | Datum of datum_value                  (* datum values *) 
   | Oper of string * i_term list          (* operators with arguments *)
   | Apply of i_term * i_term              (* applications *) 
-  | Lam of term_variable * i_term         (* abstractions *) 
+  | Lam of term_variable * term_variable list * i_term         (* abstractions *) 
   | Operator of string                    (* S, K, I, A, E, Tag etc? *) 
   | Case of term_variable list option * i_term * i_term               (* static cases *) 
   | Choice of i_term * i_term              (* choices, for extensions *) 
@@ -92,7 +92,7 @@ type value =
   | Vview of value * value
   | Vwhere of value * i_term
   | Vapply of value * value
-  | Vlam of term_variable * value_env ref * i_term
+  | Vlam of term_variable * term_variable list * value_env ref * i_term
   | Vcase of value * value_env ref * i_term
   | Vchoice of value * value
   | Vext of value ref (* for extensible functions and methods *) 
@@ -799,6 +799,14 @@ let rec format_term_variable = function
   | Mvar n  -> ps ("mvar_" ^(string_of_int n))
 ;;
 
+let rec format_term_variables = function
+  | [] -> ()
+  | p :: ps1 -> 
+      ps "," ; 
+      format_term_variable p; 
+      format_term_variables ps1
+;;
+
 let format_sEnv sub sEnv = 
   let fs x ty = 
     format_term_variable x; 
@@ -863,9 +871,10 @@ let rec do_format t' left_prec right_prec =
         close_box()
       end
 	
-  | Lam(x,s) -> 
+  | Lam(x,xs,s) -> 
       lpn();
       format_term_variable x ;
+      format_term_variables xs;
       ps " -> " ;
       do_format s 0 0;
      rpn()	

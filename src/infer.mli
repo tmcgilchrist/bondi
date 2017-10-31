@@ -12,6 +12,7 @@ val inst_tyscheme : Environments.i_type -> Environments.i_type
       (* instantiate all leading quantified type variables *) 
 val is_simple_method_type : P_data.tyVar list -> Environments.i_type -> Environments.i_type -> bool
                             (* delta               arg type             result type  *) 
+(* deprecated 
 val inf_linear :
     P_data.p_term ->
     (Environments.scheme_env)  ->
@@ -23,7 +24,7 @@ val inf_linear :
     P_data.let_status ->
     Environments.sub * Environments.i_term * Environments.TyMap.key list *
     Environments.scheme_env * Environments.i_type
-
+*) 
 val infer : P_data.p_term -> Environments.i_type -> Environments.i_term * Environments.i_type * Environments.sub 
 val infer_add_case :
            Environments.TMap.key ->

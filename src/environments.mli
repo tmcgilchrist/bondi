@@ -67,7 +67,7 @@ type i_term =
   | Datum of Datum.datum_value 
   | Oper of string * i_term list
   | Apply of i_term * i_term
-  | Lam of term_variable * i_term 
+  | Lam of term_variable * term_variable list * i_term 
   | Operator of string 
   | Case of  term_variable list option * i_term * i_term 
   | Choice of  i_term * i_term 
@@ -105,7 +105,7 @@ type value =
   | Vview of value * value
   | Vwhere of value * i_term
   | Vapply of value * value
-  | Vlam of term_variable *  value_env ref * i_term
+  | Vlam of term_variable * term_variable list * value_env ref * i_term
   | Vcase of value * value_env ref * i_term
   | Vchoice of value * value
   | Vext of value ref 

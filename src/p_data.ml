@@ -30,7 +30,7 @@ type p_term =
   | Pdatum of datum_value 
   | Poper of string * p_term list (* name and arguments *)
   | Papply of p_term * p_term 
-  | Plam of p_term * p_term 
+  | Plam of p_term * p_term list * p_term 
   | Poperator of string
 (*
   | Plin of p_term * p_term 
@@ -55,7 +55,7 @@ and name_form = Variable | Protected | Binding
 (*< CPC *)
 and let_status = 
     Simple 
-| Recursive of int 
+| Recursive 
 | Extensible
 | Linear 
 | Method 
@@ -106,8 +106,11 @@ let zvar x  = Ptvar x
 let p_datum d = Pdatum d
 let ap f x = Papply(f,x)
 let ap2 f x y = ap (ap f x) y
-let lam p t = Plam(p,t) ;;
-let multilam = List.fold_right lam ;;
+let lam p t = Plam(p,[],t) ;; 
+let multilam ps r = 
+match ps with 
+| [] -> r 
+| p::ps1 -> Plam(p, ps1, r)
 (*> CPC *)
 let multirest = List.fold_right (fun n p -> Prest(n,p));;
 (*< CPC *)
@@ -370,9 +373,11 @@ let rec format_p_term = function
        format_p_term u; 
        rpn()
 	 
-   | Plam (p,s) ->
+   | Plam (p,ps1,s) ->
        ps "fun ";
        format_p_term p;
+       let f t = format_p_term t in 
+       List.iter f ps1;
        ps " -> ";
        format_p_term s
 

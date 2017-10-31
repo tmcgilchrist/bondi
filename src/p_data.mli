@@ -20,7 +20,7 @@ type p_term =
   | Poper of string * p_term list (* name and arguments *)
 	(* datum operators, conditionals, new, assignment, output *) 
   | Papply of p_term * p_term
-  | Plam of p_term * p_term 
+  | Plam of p_term * p_term list * p_term 
   | Poperator of string
 (*
   | Plin of p_term * p_term 
@@ -45,7 +45,7 @@ and name_form = Variable | Protected | Binding
 (*< CPC *)
 and let_status = 
     Simple 
-| Recursive of int 
+| Recursive 
 | Extensible
 | Linear 
 | Method 
@@ -84,7 +84,7 @@ val p_datum : Datum.datum_value ->  p_term
 val ap : p_term -> p_term -> p_term
 val ap2 : p_term -> p_term -> p_term -> p_term
 val lam : p_term -> p_term -> p_term
-val multilam :  p_term list -> p_term -> p_term
+val multilam :  p_term list -> p_term -> p_term 
 (*> CPC *)
 val multirest : identifier list -> p_term -> p_term
 (*< CPC *)

@@ -27,19 +27,27 @@ let make_nested_let bindings body =
   in 
   fold_right bind bindings body 
 
-let make_letrec (x,ps,r) t = Plet(Recursive (length ps),x,multilam ps r,t) 
+let make_letrec (x,ps0,r) t =
+  match ps0 with 
+  | [] -> Plet(Simple, x, r, t)
+  | p :: ps -> 
+  match length ps with 
+  | 0 -> Plet(Simple,x, Papply(Poperator "Y2",Plam (p,ps,r)),t)  
+  | 1 -> Plet(Simple,x, Papply(Poperator "Y3",Plam (p,ps,r)),t)  
+  | 2 -> Plet(Simple,x, Papply(Poperator "Y4",Plam (p,ps,r)),t)  
+  | _ -> Plet(Recursive,x, Plam (p,ps,r),t) 
     (* no abstraction yet ! *) 
 
-let make_letext (x,ps,r) t = Plet(Extensible,x,multilam ps r,t)
+let make_letext (x,ps,r) t = Plet(Extensible,x,multilam ps r, t)
 
-let make_letmethod (x,ps,r) t = Plet(Method,x,multilam ps r,t)
+let make_letmethod (x,ps,r) t = Plet(Method,x, multilam ps r,t) 
 
-let make_letdiscontinuous (x,ps,r) t = Plet(Discontinuous,x,multilam ps r,t)
+let make_letdiscontinuous (x,ps,r) t = Plet(Discontinuous,x, multilam ps r,t) 
 
 let make_nested_new bindings body = 
   let bind (x,ps,r) t = 
     if ps = [] 
-    then Papply(Plam(x,t),r)
+    then Papply(Plam(x,[],t),r)
     else pTermError [x] "is a location holding a function" 
   in 
   fold_right bind bindings body 
@@ -175,15 +183,17 @@ shellAction:
   | LET binding SEMISEMI
       { 
     match $2 with 
-    | (x,ps,r) -> Let_decl(x,multilam ps r)
+    | (x,[],r) -> Let_decl(x,r)
+    | (x,p::ps,r) -> Let_decl(x,Plam (p,ps,r))
 		 } 
 
+/* deprecated 
   | LIN binding SEMISEMI
       { 
     match $2 with 
-    | (x,ps,r) -> Lin_decl(x,multilam ps r)
+    | (x,ps,r) -> Lin_decl(x,ps, r)
 		 } 
-
+*/
   | LET REC binding SEMISEMI 
       {
      match $3 with 
@@ -192,8 +202,19 @@ shellAction:
 	  match x with 
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
-	in Let_decl(x,Plet(Recursive (length ps),x, multilam ps r, y)) 	 }  
-   
+	in 
+	let body = match ps with 
+	| [] -> Plet(Simple,x,r,y)
+	| p::ps1 -> 
+	    match length ps1 with 
+	    | 0 -> Plet(Simple,x, Papply(Poperator "Y2",Plam (p,ps1,r)),y)  
+	    | 1 -> Plet(Simple,x, Papply(Poperator "Y3",Plam (p,ps1,r)),y)  
+	    | 2 -> Plet(Simple,x, Papply(Poperator "Y4",Plam (p,ps1,r)),y)
+	    | _ -> Plet(Recursive,x, Plam (p,ps1,r),y) 
+	in 
+	Let_decl(x,body)
+     }
+
   | LET EXT binding SEMISEMI 
       {
      match $3 with 
@@ -202,7 +223,10 @@ shellAction:
 	  match x with 
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
-	in Let_decl(x,Plet(Extensible,x,multilam ps r, y))		 }  
+	in 
+	match ps with 
+	| [] ->  Let_decl(x,Plet(Extensible,x,r, y))
+	| p :: ps1 -> Let_decl(x,Plet(Extensible,x,Plam(p,ps1,r), y))		 }  
    
   | LET METHOD binding SEMISEMI 
       {
@@ -212,7 +236,10 @@ shellAction:
 	  match x with 
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
-	in Let_decl(x,Plet(Method,x,multilam ps r, y))		 }  
+	in 
+	match ps with 
+	| [] ->  Let_decl(x,Plet(Method,x,r, y))
+	| p :: ps1 -> Let_decl(x,Plet(Method,x,Plam(p,ps1,r), y))		 }  
 
   | LET DISCONTINUOUS binding SEMISEMI 
       {
@@ -222,7 +249,10 @@ shellAction:
 	  match x with 
 	    Ptyped(x1,_) -> x1 
 	  |_ -> x 
-	in Let_decl(x,Plet(Discontinuous,x,multilam ps r, y))		 }  
+	in 
+	match ps with 
+	| [] ->  Let_decl(x,Plet(Discontinuous,x,r, y))
+	| p :: ps1 -> Let_decl(x,Plet(Discontinuous,x,Plam(p,ps1,r), y)) }  
 
   | TYPE typeBinding SEMISEMI
       { match $2 with (x,t) ->
@@ -300,7 +330,7 @@ methd:
   | L_IDENT EQUAL LBRACE pTerm RBRACE
       { (Method,$1,$4) } 
   | STATIC REC L_IDENT EQUAL LBRACE pTerm RBRACE
-      { (Recursive 0,$3,$6) } 
+      { (Recursive,$3,$6) } 
   | STATIC EXT L_IDENT EQUAL LBRACE pTerm RBRACE   
       {	(Extensible,$3,$6) }
   | STATIC DISCONTINUOUS L_IDENT EQUAL LBRACE pTerm RBRACE
@@ -353,7 +383,10 @@ pTerm:
   | pTerm BOOL_AND pTerm  %prec MULTOP           { ap2 (zvar "&&") $1 $3 }
   | pTerm BOOL_OR pTerm  %prec ADDOP             { ap2 (zvar "||") $1 $3 }
   | IF pTerm THEN pTerm ELSE pTerm    { Poper("cond",[$2;$4;$6]) }
-  | FUN simpleBondiTermList RARROW pTerm  { multilam $2 $4 }
+  | FUN simpleBondiTermList RARROW pTerm  { 
+    match $2 with 
+    | [] -> $4 
+    | p :: ps -> Plam(p,ps,$4) }
 /*
   | FUN simpleBondiTermList LONGRARROW pTerm  { multilin $2 $4 }
 */

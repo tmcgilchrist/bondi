@@ -103,7 +103,8 @@ let declare is_attribute identifier source =
   in 
   let (inferredTerm,inferredType,inferredSub) = 
     match is_attribute with 
-      Linear -> 
+      Linear -> basicError "linearity is not here supported"
+(* 
 	let (sub3,u3,_,_,uty3) = 
 	  inf_linear source 
 	    TMap.empty [] TMap.empty (Some []) idSub (Some expectedTy) Linear
@@ -118,6 +119,7 @@ let declare is_attribute identifier source =
 	      else typeError [uty4] "is not the type of a linear term" 
 	  | _ ->  (u3,uty4,sub3)
 	end
+*) 
     | Method -> 
 	let (t1,ty1,sub1) = infer source expectedTy in 
 	begin 
@@ -126,7 +128,7 @@ let declare is_attribute identifier source =
 	      (t1,funty pty sty,sub1) 
 	  | _ -> typeError [ty1] "is not a method type" 
 	end
-    | Simple |Recursive _ | Extensible | Discontinuous -> infer source expectedTy 
+    | Simple |Recursive | Extensible | Discontinuous -> infer source expectedTy 
   in 
   globalRefVarSub := 
     TyMap.fold 
@@ -422,7 +424,7 @@ let declare_data_type (tyv,ctr,decs) =
 	    fold_left (fun x y -> Apply(x,Tvar(y,ctr)))
 	      (Tconstructor (Var abs,ctr)) tvs in 
 	  let body0 =  Apply(Apply(Tconstructor (Var "Tag",0),nm),c0) in 
-	  let body = let f = nextvar() in Lam(f,Apply(Tvar(f,0),body0)) in  
+	  let body = let f = nextvar() in Lam(f,[],Apply(Tvar(f,0),body0)) in  
 
 	  let new_case = evaluate (Case(None,pat,body)) in 
 	  let (dv,snd_arg) = snd(envFind 0 (Var "deconstruct") globalVEnv) in 
@@ -577,7 +579,7 @@ gTyEnvAdd (TyVar cl_tyv) ctr (Synonym(TyC (TyVar cl_tyv,ctr)));
     f_counter := "";
     match status with 
     | Method ->  add_decl status label pattern_as_this (Some cty) t
-    | Recursive _ -> let full_label = cl_str^"."^label in 
+    | Recursive -> let full_label = cl_str^"."^label in 
                    declare status (Ptvar full_label) (Plet(status,(Ptvar full_label),t,(Ptvar full_label)))
     | Discontinuous -> let full_label = cl_str^"."^label in 
                    declare status (Ptvar full_label) (Plet(status,(Ptvar full_label),t,(Ptvar full_label)))

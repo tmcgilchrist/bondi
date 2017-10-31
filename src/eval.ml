@@ -108,7 +108,7 @@ and  (eval : value_env * i_term -> value) = fun (vEnv,term) ->
   | TnewArr (t,n) -> eval_new_arr (eval (vEnv,t)) (eval (vEnv,n))
   | Oper(d,args) -> eval_oper vEnv d args
   | Apply(x,y) -> evalAp vEnv x y 
-  | Lam(x,s) -> Vlam(x,ref vEnv,s)
+  | Lam(x,xs,s) -> Vlam(x,xs,ref vEnv,s)
   | Operator s -> Voperator s
   | Case(theta_opt,p,s) -> eval_case vEnv (theta_opt,p,s)  
   | Choice(s,t) -> eval_choice vEnv s t 
@@ -210,7 +210,8 @@ Vdatum (Bool res)
 and evalAp_opt x0 arg =
   (* produces a variable option, None for match failure *) 
   match x0 with 
-  | Vlam(x,vEnv,s) -> Some (eval(TMap.add x arg !vEnv,s))
+  | Vlam(x,[],vEnv,s) -> Some (eval(TMap.add x arg !vEnv,s))
+  | Vlam(x,x1::xs,vEnv,s) -> Some (Vlam(x1,xs, ref (TMap.add x arg !vEnv),s))
   | Vcase(x,vEnv,s) -> 
       begin 
 	match patternmatch (Some !vEnv) x arg with 
@@ -509,7 +510,7 @@ and evalLetRec (vEnv : value_env ) x u s =
   eval (vEnv2,s)
 
 and update_envs x u = function 
-  | Vlam(_,vE,_) 
+  | Vlam(_,_,vE,_) 
   | Vcase(_,vE,_) -> vE := TMap.add x u !vE
   | Vchoice (f,g) -> update_envs x u f; update_envs x u g
   | _ -> ()
