@@ -65,6 +65,8 @@ let basic_paths = "." :: (try [System.standard_library] with Not_found -> [])
 (* Resolving file names  *)
 
 let full_name name dir = 
+  print_endline name;
+  print_endline dir;
   let dir_name = Filename.concat dir name 
   in 
   if file_exists dir_name
@@ -346,7 +348,7 @@ let theShell () =
   in
   let interactive = command_line.cl_files = [] && isatty () in
   error_stop_mode := command_line.cl_errorstopmode;
-  let startUps = if command_line.cl_std then [] else [] in
+  let startUps = if command_line.cl_std then ["prelude/standard_prelude"] else [] in
   Sys.catch_break true;
   initial_type_environment();
   initial_term_environment();
