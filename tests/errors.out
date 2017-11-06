@@ -88,50 +88,18 @@ select: (all a.a -> Maybe b) -> c -> List b
 is: lin a -> b -> Maybe a
 (* Finished sourcing "./prelude/queries.bon" *)
 (* Finished sourcing "./prelude/standard_prelude.bon" *)
-tests/declaration_tests.bon
+tests/errors.bon
 .
-(* Begin sourcing "./tests/declaration_tests.bon"... *)
-x: Int
-x = 3
-f: a -> Int
-x: Int
-x = 5
-it: Bool
-it = True
-Leaf: One
-g: a -> One
-Leaf: One
-it: Bool
-it = True
-Inl: a -> Coproduct a b
-Inr: b -> Coproduct a b
-class Name {
-name: Name[a] -> ref String
-get_name: Name[a] -> Unit -> String
-set_name: Name[a] -> String -> Unit
-toString: a -> String
-}
-z: Name[]
-z = ...
-g: a -> Name[]
-case_analysis: (a -> b) -> (c -> b) -> Coproduct a c -> b
+(* Begin sourcing "./tests/errors.bon"... *)
+it: a -> Bool
 it: Bool
 it = True
 it: Bool
 it = True
+xs: array Float
+xs = ...
 it: Bool
 it = True
 it: Bool
-it = True
-Leaf: One
-t1: One
-t1 = Leaf
-Leaf: One
-t2: One
-t2 = Leaf
-it: Bool
-it = True
-Poly: (all a.a -> Int) -> Poly
-it: Poly -> a -> Int
-it: Poly -> Poly
-(* Finished sourcing "./tests/declaration_tests.bon" *)
+it = False
+(* Finished sourcing "./tests/errors.bon" *)

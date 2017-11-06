@@ -14,7 +14,12 @@ uninstall:
 
 reinstall: uninstall reinstall
 
-clean:;
-	rm -rf _build
+clean:
+	jbuilder clean
 
-.PHONY: default install uninstall reinstall clean
+tests:
+	test -d $d || mkdir -p $d && cp -r tests $d
+	jbuilder clean && jbuilder runtest && jbuilder clean
+	
+
+.PHONY: default install uninstall reinstall clean tests

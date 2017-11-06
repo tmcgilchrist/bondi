@@ -1,15 +1,23 @@
+prelude/standard_prelude
+.
 (* Begin sourcing "./prelude/standard_prelude.bon"... *)
+prelude/printing.bon
+.
 (* Begin sourcing "./prelude/printing.bon"... *)
 ^: String -> String -> String
 toString: a -> String
 print: a -> Unit
 println: a -> Unit
 (* Finished sourcing "./prelude/printing.bon" *)
+prelude/imperatives_core.bon
+.
 (* Begin sourcing "./prelude/imperatives_core.bon"... *)
 forall: Int -> Int -> (Int -> a) -> Unit
 iter: (all a.a -> Unit) -> b -> Unit
 clone: a -> a
 (* Finished sourcing "./prelude/imperatives_core.bon" *)
+prelude/structure_poly.bon
+.
 (* Begin sourcing "./prelude/structure_poly.bon"... *)
 Pair: a -> b -> a * b
 fromTuple: a -> String
@@ -37,6 +45,8 @@ foldleft: (a -> b -> a) -> a -> c b -> a
 foldright: (a -> b -> b) -> c a -> b -> b
 zipwith: (a * b -> c) -> d a * e b -> d c
 (* Finished sourcing "./prelude/structure_poly.bon" *)
+prelude/datum2generic.bon
+.
 (* Begin sourcing "./prelude/datum2generic.bon"... *)
 &&: Bool -> Bool -> Bool
 not: Bool -> Bool
@@ -63,9 +73,13 @@ greaterthan: a * b -> Bool
 greaterthanorequal: a * b -> Bool
 >=: a -> a -> Bool
 (* Finished sourcing "./prelude/datum2generic.bon" *)
+prelude/dynamic2static.bon
+.
 (* Begin sourcing "./prelude/dynamic2static.bon"... *)
 dynamic_case_for_internal_use_only = ...
 (* Finished sourcing "./prelude/dynamic2static.bon" *)
+prelude/queries.bon
+.
 (* Begin sourcing "./prelude/queries.bon"... *)
 apply2all: (all a.a -> a) -> b -> b
 append: List a -> List a -> List a
@@ -74,7 +88,9 @@ select: (all a.a -> Maybe b) -> c -> List b
 is: lin a -> b -> Maybe a
 (* Finished sourcing "./prelude/queries.bon" *)
 (* Finished sourcing "./prelude/standard_prelude.bon" *)
-(* Begin sourcing "./basic_tests.bon"... *)
+tests/basic_tests.bon
+.
+(* Begin sourcing "./tests/basic_tests.bon"... *)
 it: Int
 it = 3
 it: Float
@@ -261,4 +277,4 @@ Inl: a -> a + b
 Inr: b -> a + b
 it: Bool
 it = True
-(* Finished sourcing "./basic_tests.bon" *)
+(* Finished sourcing "./tests/basic_tests.bon" *)

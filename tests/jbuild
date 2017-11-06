@@ -1,0 +1,8 @@
+(executables
+ ((libraries (alcotest podge bondi))
+  (names (tests))))
+
+(alias
+ ((name   runtest)
+  (deps   (tests.exe))
+(action (run ${<}))))
