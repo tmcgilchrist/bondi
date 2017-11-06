@@ -15,6 +15,9 @@ uninstall:
 reinstall: uninstall reinstall
 
 clean:;
-	rm -rf _build
+	jbuilder clean
 
-.PHONY: default install uninstall reinstall clean
+tests:
+	jbuilder clean && jbuilder runtest && jbuilder clean
+
+.PHONY: default install uninstall reinstall clean test

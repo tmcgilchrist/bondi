@@ -267,9 +267,3 @@ True != False;;
 datatype Bincoprod x y = Inl of x | Inr of y ;;
 
 Inl 3 != Inr 4;;
-
-
-
-
-
-

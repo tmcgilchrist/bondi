@@ -102,7 +102,18 @@ select: (all a.a -> Maybe b) -> c -> List b
 is: lin a -> b -> Maybe a
 (* Finished sourcing "/Users/alberto.vergara/.bondi/prelude/queries.bon" *)
 (* Finished sourcing "/Users/alberto.vergara/.bondi/prelude/standard_prelude.bon" *)
-../../../tests/add_case.bon
+../../../tests/errors.bon
 .
-(* Begin sourcing "./../../../tests/add_case.bon"... *)
-(* Finished sourcing "./../../../tests/add_case.bon" *)
+(* Begin sourcing "./../../../tests/errors.bon"... *)
+it: a -> Bool
+it: Bool
+it = True
+it: Bool
+it = True
+xs: array Float
+xs = ...
+it: Bool
+it = True
+it: Bool
+it = False
+(* Finished sourcing "./../../../tests/errors.bon" *)
