@@ -1,32 +1,24 @@
 prelude/standard_prelude
 .
-prelude/standard_prelude
-/Users/alberto.vergara/.bondi
-(* Begin sourcing "/Users/alberto.vergara/.bondi/prelude/standard_prelude.bon"... *)
+(* Begin sourcing "./prelude/standard_prelude.bon"... *)
 prelude/printing.bon
 .
-prelude/printing.bon
-/Users/alberto.vergara/.bondi
-(* Begin sourcing "/Users/alberto.vergara/.bondi/prelude/printing.bon"... *)
+(* Begin sourcing "./prelude/printing.bon"... *)
 ^: String -> String -> String
 toString: a -> String
 print: a -> Unit
 println: a -> Unit
-(* Finished sourcing "/Users/alberto.vergara/.bondi/prelude/printing.bon" *)
+(* Finished sourcing "./prelude/printing.bon" *)
 prelude/imperatives_core.bon
 .
-prelude/imperatives_core.bon
-/Users/alberto.vergara/.bondi
-(* Begin sourcing "/Users/alberto.vergara/.bondi/prelude/imperatives_core.bon"... *)
+(* Begin sourcing "./prelude/imperatives_core.bon"... *)
 forall: Int -> Int -> (Int -> a) -> Unit
 iter: (all a.a -> Unit) -> b -> Unit
 clone: a -> a
-(* Finished sourcing "/Users/alberto.vergara/.bondi/prelude/imperatives_core.bon" *)
+(* Finished sourcing "./prelude/imperatives_core.bon" *)
 prelude/structure_poly.bon
 .
-prelude/structure_poly.bon
-/Users/alberto.vergara/.bondi
-(* Begin sourcing "/Users/alberto.vergara/.bondi/prelude/structure_poly.bon"... *)
+(* Begin sourcing "./prelude/structure_poly.bon"... *)
 Pair: a -> b -> a * b
 fromTuple: a -> String
 it: Unit
@@ -52,12 +44,10 @@ None: Maybe a
 foldleft: (a -> b -> a) -> a -> c b -> a
 foldright: (a -> b -> b) -> c a -> b -> b
 zipwith: (a * b -> c) -> d a * e b -> d c
-(* Finished sourcing "/Users/alberto.vergara/.bondi/prelude/structure_poly.bon" *)
+(* Finished sourcing "./prelude/structure_poly.bon" *)
 prelude/datum2generic.bon
 .
-prelude/datum2generic.bon
-/Users/alberto.vergara/.bondi
-(* Begin sourcing "/Users/alberto.vergara/.bondi/prelude/datum2generic.bon"... *)
+(* Begin sourcing "./prelude/datum2generic.bon"... *)
 &&: Bool -> Bool -> Bool
 not: Bool -> Bool
 ||: Bool -> Bool -> Bool
@@ -82,29 +72,25 @@ greaterthan: a * b -> Bool
 >: a -> a -> Bool
 greaterthanorequal: a * b -> Bool
 >=: a -> a -> Bool
-(* Finished sourcing "/Users/alberto.vergara/.bondi/prelude/datum2generic.bon" *)
+(* Finished sourcing "./prelude/datum2generic.bon" *)
 prelude/dynamic2static.bon
 .
-prelude/dynamic2static.bon
-/Users/alberto.vergara/.bondi
-(* Begin sourcing "/Users/alberto.vergara/.bondi/prelude/dynamic2static.bon"... *)
+(* Begin sourcing "./prelude/dynamic2static.bon"... *)
 dynamic_case_for_internal_use_only = ...
-(* Finished sourcing "/Users/alberto.vergara/.bondi/prelude/dynamic2static.bon" *)
+(* Finished sourcing "./prelude/dynamic2static.bon" *)
 prelude/queries.bon
 .
-prelude/queries.bon
-/Users/alberto.vergara/.bondi
-(* Begin sourcing "/Users/alberto.vergara/.bondi/prelude/queries.bon"... *)
+(* Begin sourcing "./prelude/queries.bon"... *)
 apply2all: (all a.a -> a) -> b -> b
 append: List a -> List a -> List a
 some_append: Maybe a -> List a -> List a
 select: (all a.a -> Maybe b) -> c -> List b
 is: lin a -> b -> Maybe a
-(* Finished sourcing "/Users/alberto.vergara/.bondi/prelude/queries.bon" *)
-(* Finished sourcing "/Users/alberto.vergara/.bondi/prelude/standard_prelude.bon" *)
-../../../tests/errors.bon
+(* Finished sourcing "./prelude/queries.bon" *)
+(* Finished sourcing "./prelude/standard_prelude.bon" *)
+tests/errors.bon
 .
-(* Begin sourcing "./../../../tests/errors.bon"... *)
+(* Begin sourcing "./tests/errors.bon"... *)
 it: a -> Bool
 it: Bool
 it = True
@@ -116,4 +102,4 @@ it: Bool
 it = True
 it: Bool
 it = False
-(* Finished sourcing "./../../../tests/errors.bon" *)
+(* Finished sourcing "./tests/errors.bon" *)

@@ -14,10 +14,12 @@ uninstall:
 
 reinstall: uninstall reinstall
 
-clean:;
+clean:
 	jbuilder clean
 
 tests:
-	jbuilder clean && jbuilder runtest && jbuilder clean
+	test -d $d || mkdir -p $d && cp -r tests $d
+	jbuilder clean && jbuilder runtest
+	
 
-.PHONY: default install uninstall reinstall clean test
+.PHONY: default install uninstall reinstall clean tests

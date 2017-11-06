@@ -1,11 +1,15 @@
+let standard_library_default = 
+  Printf.sprintf "%s/.bondi" (Unix.getenv "HOME") in
+  Unix.chdir standard_library_default
+
 let run_file fileName = 
-  Printf.sprintf "bondi ../../../tests/%s.bon" fileName
+  Printf.sprintf "bondi tests/%s.bon" fileName
   |> Podge.Unix.read_process_output
   |> List.fold_left (^) ""
 
 let read_expect fileName =
-  Printf.sprintf "../../../tests/%s.out" fileName
-  |> Podge.Unix.read_all 
+  Printf.sprintf "tests/%s.out" fileName
+  |> Podge.Unix.read_all
 
 (* The tests *)
 let test_expectation fileName () =
