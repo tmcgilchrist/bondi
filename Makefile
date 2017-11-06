@@ -19,7 +19,7 @@ clean:
 
 tests:
 	test -d $d || mkdir -p $d && cp -r tests $d
-	jbuilder clean && jbuilder runtest
+	jbuilder clean && jbuilder runtest && jbuilder clean
 	
 
 .PHONY: default install uninstall reinstall clean tests
