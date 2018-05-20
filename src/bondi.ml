@@ -1,4 +1,3 @@
-
 (* type of user commands in shell *)
 
 open Printf
@@ -9,7 +8,7 @@ open Datum
 open P_data
 open Environments
 open Infer
-open Declare 
+open Declare
 open Eval
 open Parse
 open Lex
@@ -19,33 +18,33 @@ open System
 (*** initialising bondi environments *)
 
 let initial_type_environment() =
-  (* dropped "pairF" *) 
+  (* dropped "pairF" *)
   let g name = gTyEnvAdd (TyVar name) 0 (Synonym(cvar name))
-  in 
-  iter g initial_types 
+  in
+  iter g initial_types
 ;;
 
 
-let constructors = 
+let constructors =
   [
    ("Un", cvar "Unit");
 
-  (let x = nextTypeVar() in 
+  (let x = nextTypeVar() in
   ("Exception", Quant(x,TyV(x,0))));
 
-   (let x = nextTypeVar() in 
-   let y = TyV(x,0) in 
+   (let x = nextTypeVar() in
+   let y = TyV(x,0) in
    ("Ref", Quant(x,funty y (Ref y)))) ;
 
-(* make Ref an operator??? *) 
+(* make Ref an operator??? *)
 
 
  ]
 
-let add_constructors (name,sch) = 
+let add_constructors (name,sch) =
   envAdd (Var name) 0 (sch,Linear) globalCEnv ;;
 
-let initial_term_environment() = 
+let initial_term_environment() =
 List.iter add_constructors constructors
 
 
@@ -64,26 +63,26 @@ let basic_paths = "." :: (try [System.standard_library] with Not_found -> [])
 
 (* Resolving file names  *)
 
-let full_name name dir = 
+let full_name name dir =
   print_endline name;
   print_endline dir;
-  let dir_name = Filename.concat dir name 
-  in 
+  let dir_name = Filename.concat dir name
+  in
   if file_exists dir_name
   then Some dir_name
-  else 
-    let bon_name = dir_name ^ ".bon" 
-    in 
+  else
+    let bon_name = dir_name ^ ".bon"
+    in
     if file_exists bon_name
     then Some bon_name
-    else None 
+    else None
 
-let rec path_name name = function 
-  | [] -> None 
-  | dir :: dirs -> 
-      match full_name name dir with 
-	None -> path_name name dirs 
-      | Some full_name -> Some full_name 
+let rec path_name name = function
+  | [] -> None
+  | dir :: dirs ->
+      match full_name name dir with
+	None -> path_name name dirs
+      | Some full_name -> Some full_name
 
 
 
@@ -108,7 +107,7 @@ let (prompt:string ref) = ref !ps1;;
 let set_ps1 s = ps1 := s;;
 let set_ps2 s = ps2 := s;;
 let set_start() = prompt := !ps1;;
-let get_prompt() = 
+let get_prompt() =
   let tmp = !prompt in
     prompt := !ps2;
     tmp
@@ -120,26 +119,26 @@ let echo_switch = ref false;;
 let number_switch = ref false;;
 let line_number = ref 0;;
 
-let set_stdin_prompt_mode (value:bool) = 
+let set_stdin_prompt_mode (value:bool) =
   prompt_switch := value;;
 
-let set_stdin_echo_mode (value:bool) = 
+let set_stdin_echo_mode (value:bool) =
   echo_switch := value;;
 
-let set_stdin_number_mode (value:bool) = 
+let set_stdin_number_mode (value:bool) =
   number_switch := value;;
 
 
 (* let readline_lexer_func (s:string) (maxfill:int) =
   begin (* prime the buffer *)
     if !buffer = "" then
-      buffer := Config.readline (get_prompt()); 
+      buffer := Config.readline (get_prompt());
   end;
 
   let buffer_length = String.length !buffer in
   let toCopy = min maxfill buffer_length in
-    String.blit !buffer 0 s 0 toCopy; (* blit the head across *) 
-    buffer := String.sub !buffer toCopy (buffer_length - toCopy); 
+    String.blit !buffer 0 s 0 toCopy; (* blit the head across *)
+    buffer := String.sub !buffer toCopy (buffer_length - toCopy);
       (* cut it out of the buffer *)
     toCopy
 ;;
@@ -149,24 +148,24 @@ let std_lexer_func get_line (s:string) (maxfill:int)  =
   begin (* prime the buffer *)
     if !buffer = "" then begin
       if !prompt_switch then begin
-        if !number_switch 
+        if !number_switch
         then print_string (" " ^ (string_of_int !line_number));
-        print_string (get_prompt()) 
+        print_string (get_prompt())
       end;
       flush stdout;
 
       begin
-        try 
-          buffer := (get_line() ^ "\n"); 
+        try
+          buffer := (get_line() ^ "\n");
           incr line_number
         with  _ ->  buffer := ""
       end;
-      
+
       if !number_switch && not !prompt_switch  (* CHANGED & TO && !!!! *)
       then print_string ((string_of_int !line_number) ^ ": ");
-      
+
       if !echo_switch then begin
-        print_string !buffer; 
+        print_string !buffer;
         flush stdout
       end
     end
@@ -174,10 +173,10 @@ let std_lexer_func get_line (s:string) (maxfill:int)  =
 
   let buffer_length = String.length !buffer in
   let toCopy = min maxfill buffer_length in
-    String.blit !buffer 0 s 0 toCopy; (* blit the head across *) 
-    buffer := String.sub !buffer toCopy (buffer_length - toCopy); 
+    String.blit !buffer 0 (Bytes.of_string s) 0 toCopy; (* blit the head across *)
+    buffer := String.sub !buffer toCopy (buffer_length - toCopy);
       (* cut it out of the buffer *)
-    toCopy 
+    toCopy
 ;;
 
 let line_from_channel (chan:in_channel) =
@@ -190,31 +189,31 @@ let input_channel_line chan () = input_line chan;;
 let parseShellListFromChannel chan =
   Lex.runParser
     Parse.parseShellActionList
-    (Lexing.from_function (std_lexer_func (input_channel_line chan)))
+    (Lexing.from_function (fun s -> std_lexer_func (input_channel_line chan) (Bytes.to_string s)))
 
 
 
-(*** shell actions and loading *) 
+(*** shell actions and loading *)
 
-let rec process_action action = 
+let rec process_action action =
   f_string_tbl := [];
   f_counter := "";
-  let _ = get_declaration_counter() in 
+  let _ = get_declaration_counter() in
   match action with
-  | Let_decl(identifier,(Plet(status,_,_,_) as sourceTerm)) -> 
+  | Let_decl(identifier,(Plet(status,_,_,_) as sourceTerm)) ->
       declare status identifier sourceTerm
-  | Let_decl(identifier,sourceTerm) -> 
+  | Let_decl(identifier,sourceTerm) ->
       declare Simple identifier sourceTerm
-  | Lin_decl(identifier,sourceTerm) -> 
-      declare Linear identifier sourceTerm 
-  | Let_type decl ->  
-      declare_type decl 
-  | Let_type_synonym (identifier,ty) -> 
+  | Lin_decl(identifier,sourceTerm) ->
+      declare Linear identifier sourceTerm
+  | Let_type decl ->
+      declare_type decl
+  | Let_type_synonym (identifier,ty) ->
       declare_type_synonym identifier ty
-  | Let_class (tyv,args,super_opt,(mds,add_cases)) -> 
-      declare_class tyv args super_opt mds add_cases 
-  | Directive (directive,s) -> 
-      match directive with 
+  | Let_class (tyv,args,super_opt,(mds,add_cases)) ->
+      declare_class tyv args super_opt mds add_cases
+  | Directive (directive,s) ->
+      match directive with
       | "show" -> set_mode s Show_on
       | "hide" -> set_mode s Show_off
       | "cd" -> chdir s
@@ -223,14 +222,14 @@ let rec process_action action =
       (*> CPC *)
       | "status" -> show_status ()
       (*< CPC *)
-      | str1 -> basicError (str1^" is an unknown directive") 
+      | str1 -> basicError (str1^" is an unknown directive")
 
 and load name =
-  let source = 
-    match path_name name basic_paths with 
+  let source =
+    match path_name name basic_paths with
     | Some fullname -> fullname
-    | None -> raise Not_found 
-  in 
+    | None -> raise Not_found
+  in
   let save_modes = !modes in
   modes := ("prompt", Show_off) :: ("echo", Show_off) :: !modes;
   let chan = open_in source in
@@ -239,7 +238,7 @@ and load name =
   begin
     try
       List.iter process_action (parseShellListFromChannel chan);
-      (* defined recursively, below *) 
+      (* defined recursively, below *)
       close_in chan
     with e ->
       modes := save_modes;
@@ -261,7 +260,7 @@ and load name =
 
 let error_stop_mode = ref false
 
-let handleTopLoopException exn = 
+let handleTopLoopException exn =
   begin match exn with
 
   (* system-defined *)
@@ -277,17 +276,17 @@ let handleTopLoopException exn =
 
   (* exported from source files *)
 
-  | Lex.SyntaxError (line,col,message) ->  
+  | Lex.SyntaxError (line,col,message) ->
 (*      Printf.eprintf "Syntax error at line %d, column %d : %s\n"
             line col message;  *)
       Printf.printf "Syntax error at line %d, column %d : %s"
-            line col message; 
+            line col message;
   | Error s       -> Printf.printf "error: %s" s
   | PtypeError (tys,s) -> formatTypeError idSub (map convert_type tys,s)
   | TypeError (tys,s) -> formatTypeError idSub (tys,s)
   | PTermError (ts,s)  -> formatPTermError (ts,s)
   | TermError (ts,s)  -> formatTermError (ts,s)
-  | Wrong_index m -> 
+  | Wrong_index m ->
       Printf.printf "index %d is too small in the environment" m
   | e -> Printf.printf "Unexpected exception: %s" (Printexc.to_string e)
   end;
@@ -295,8 +294,8 @@ let handleTopLoopException exn =
 ;;
 
 let makeConsoleLexbuf () =
-  Lexing.from_function 
-    (std_lexer_func read_line)
+  Lexing.from_function
+    (fun s -> std_lexer_func read_line (Bytes.to_string s))
    (*  (if isatty () then readline_lexer_func else std_lexer_func read_line) *)
 ;;
 
@@ -334,7 +333,7 @@ let rec general_load name =
     let y = load name in
     Lex.line_number := save_line_number; modes := save_modes; y
   with e ->
-    Lex.line_number := save_line_number; modes := save_modes; 
+    Lex.line_number := save_line_number; modes := save_modes;
     handleTopLoopException e;
     Printf.printf "Error processing %s, continuing\n" name;
     flush stdout;
@@ -369,7 +368,7 @@ let theShell () =
     set_mode "echo" Show_on;
     set_mode "prompt" Show_on;
   end;
-  if command_line.cl_files = [] then readEvalPrint () 
+  if command_line.cl_files = [] then readEvalPrint ()
   else
   List.iter general_load command_line.cl_files
 ;;
