@@ -1,8 +1,8 @@
 (executables
- ((libraries (alcotest podge bondi))
+ ((libraries (alcotest podge))
   (names (tests))))
 
 (alias
  ((name   runtest)
   (deps   (tests.exe))
-(action (run ${<}))))
+  (action (run ${<}))))

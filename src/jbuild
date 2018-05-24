@@ -6,5 +6,4 @@
 (executable
  ((name bondi)
   (public_name bondi)
-  (libraries (unix threads alcotest))
-))
+  (libraries (unix threads alcotest))))
