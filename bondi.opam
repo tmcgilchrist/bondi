@@ -14,3 +14,4 @@ depends: [
   "alcotest"
   "podge"
 ]
+available: [ ocaml-version >= "4.03" ]
