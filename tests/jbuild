@@ -1,5 +1,5 @@
 (executables
- ((libraries (alcotest podge))
+ ((libraries (alcotest))
   (names (tests))))
 
 (alias

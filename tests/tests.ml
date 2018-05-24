@@ -1,15 +1,22 @@
-let standard_library_default = 
-  Printf.sprintf "%s/.bondi" (Unix.getenv "HOME") in
-  Unix.chdir standard_library_default
+let exhaust ic =
+  let all_input = ref [] in
+  (try while true do all_input := input_line ic :: !all_input; done
+   with End_of_file -> ());
+  close_in ic;
+  List.rev !all_input
 
-let run_file fileName = 
-  Printf.sprintf "bondi tests/%s.bon" fileName
-  |> Podge.Unix.read_process_output
+let read_process_output p = Unix.open_process_in p |> exhaust
+
+let read_all path = open_in path |> exhaust |> String.concat ""
+
+let run_file fileName =
+  Printf.sprintf "jbuilder exec bondi -- tests/%s.bon" fileName
+  |> read_process_output
   |> List.fold_left (^) ""
 
 let read_expect fileName =
   Printf.sprintf "tests/%s.out" fileName
-  |> Podge.Unix.read_all
+  |> read_all
 
 (* The tests *)
 let test_expectation fileName () =
