@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build-4.04:
+    docker:
+      - image: tmcgilchrist/ci-ocaml:ubuntu_xenial-4.04-20181001033113-0453d11
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: ./bin/ci
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-4.04
