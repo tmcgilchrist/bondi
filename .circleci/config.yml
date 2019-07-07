@@ -2,7 +2,7 @@ version: 2
 jobs:
   build-4.04:
     docker:
-      - image: tmcgilchrist/ci-ocaml:ubuntu_xenial-4.04-20181001033113-0453d11
+      - image: tmcgilchrist/ci-ocaml:ubuntu_xenial-4.04-20190624054323-375be29
     steps:
       - checkout
       - run:
