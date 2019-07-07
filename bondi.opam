@@ -12,7 +12,7 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "dune"                {build & >= "1.5"}
-  "base"                {>= "v0.11.1"}
+  "dune"                { build }
+  "base"                { >= "v0.11.1" }
   "base-unix"
 ]
